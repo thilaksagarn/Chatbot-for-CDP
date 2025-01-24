@@ -1,6 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 import streamlit as st
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 
 # Function to fetch and parse content from Segment docs
 def fetch_segment_instructions():
@@ -25,7 +29,7 @@ def fetch_segment_instructions():
     if not steps:
         return "No detailed steps found under the 'Create a source' section."
 
-    content = ["*Steps to Create a Source in Segment:*"]
+    content = ["**Steps to Create a Source in Segment:**"]
     for step in steps.find_all("li"):
         content.append(f"- {step.get_text(strip=True)}")
     return "\n".join(content)
@@ -46,14 +50,14 @@ def fetch_mparticle_instructions():
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Find all div elements with the class body
+    # Find all `div` elements with the class `body`
     body_sections = soup.find_all("div", class_="body")
     if not body_sections:
         return "Could not find relevant content in the 'Manage User Profiles' section."
 
-    content = ["*Steps to Create a User Profile in mParticle:*"]
+    content = ["**Steps to Create a User Profile in mParticle:**"]
 
-    # Iterate over the sections to extract h3 and p text
+    # Iterate over the sections to extract `h3` and `p` text
     for section in body_sections:
         h3_tag = section.find("h3")  # Find the h3 tag
         p_tag = section.find("p")  # Find the p tag
@@ -68,7 +72,7 @@ def fetch_mparticle_instructions():
 
 # Function to fetch and parse content from Lytics docs
 def fetch_lytics_instructions():
-    url = "https://docs.lytics.com/audiences/"
+    url = "https://docs.lytics.com/docs/audiences"
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -81,18 +85,23 @@ def fetch_lytics_instructions():
         return f"Failed to retrieve documentation from {url}. Status code: {response.status_code}"
 
     soup = BeautifulSoup(response.text, "html.parser")
-    section = soup.find("h2", string="Build an Audience Segment")
-    if not section:
-        return "Could not find the 'Build an Audience Segment' section on the page."
 
-    steps = section.find_next("ol")
-    if not steps:
-        return "No detailed steps found under the 'Build an Audience Segment' section."
+    # Locate the blockquote with the required class
+    callout_section = soup.find("blockquote", class_="callout callout_info")
+    if not callout_section:
+        return "Could not find the required information inside the 'callout_info' section."
 
-    content = ["*Steps to Build an Audience Segment in Lytics:*"]
-    for step in steps.find_all("li"):
-        content.append(f"- {step.get_text(strip=True)}")
+    # Extract all <p> tags within this blockquote
+    paragraphs = callout_section.find_all("p")
+    if not paragraphs:
+        return "No paragraphs found within the 'callout_info' section."
+
+    content = ["**Steps or Information from Lytics Documentation:**"]
+    for paragraph in paragraphs:
+        content.append(paragraph.get_text(strip=True))
+    
     return "\n".join(content)
+
 
 # Function to fetch and parse content from Zeotap docs
 def fetch_zeotap_instructions():
@@ -110,30 +119,22 @@ def fetch_zeotap_instructions():
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Find the specific <div> container
-    container_div = soup.find("div", id="pnlContainer_cphMain_articleEditor_pnlCallback_pnlContentFrameContainer")
-    if not container_div:
-        return "Step 1 - Source Creation: /n To get started with Zeotap CDP, begin by creating a new source in the Sources module./n You must also select a source category and source type that align with your specific needs and create the source accordingly./n For more information about how to create sources for different categories, refer here./n Step 2 - Source Implementation: Once the source is created, proceed with its implementation./n Refer to the step-by-step instructions provided in the Implementation guide tailored to the chosen Source Type. /n You can download this document from the IMPLEMENTATION DETAILS tab of the source that you created./n Step 3 - Previewing Data:/n After implementation, you can examine the data that has been received into the system under the PREVIEW DATA tab. Note that once the data starts flowing into the system, the status of the source changes to Integrated./n Step 4 - Catalogue Mapping:/n This is the stage in which you can standardise the incoming data to a single organisational-level catalogue by mapping and applying the required data transformations. Ensure that your ingested data such as identifiers, traits, consent, events and more are appropriately mapped against the fields available in the Zeotap catalogue. This ensures the structuring the data flow efficiently. You can map the ingested fields to the Catalogue fields by clicking MAP TO CATALOGUE under CATALOGUE MAPPING./n Step 5 - Create Calculated Attributes:/n This step allows you to derive user-level insights by aggregating your users' isolated actions. You can then use this data to create more powerful customer cohorts. As a marketer, you can use calculated attributes to create new attributes for a user by aggregating their event data over a specific time period. For example, 90_day_revenue of a user, 1_week_page_views to check the engagement of a user, units_purchased by a user for a specific category like T-shirts. These calculated attributes are used as segmenting criteria and can then be forwarded to different integrations. For example, in a workflow, you can define High Spenders as users with 90_day_revenue > €500 or Low Engagement Users by putting 1_week_page_views < 5 criteria /n Step 6 - Create your Audience: Upon successfully creating a source and ingesting your data into the Zeotap system, the next step involves unifying this data by mapping it to the corresponding fields on the Catalogue. Subsequently, you can proceed to create a cohort of customers, commonly referred to as Audience as per your use case. This Audience can be further refined by applying specific criteria. /n Step 7 - Activation:/n  Once your Audience is well-defined, you can then activate it on a designated Destination. To know more about how to activate the Audience on the Destination"
+    # Extract all <strong> tags from the document
+    strong_tags = soup.find_all("strong")
+    if not strong_tags:
+        return "Step 1 - Source Creation\n Step 2 - Source Implementation \n Step 3 - Previewing Data \n Step 4 - Catalogue Mapping \n Step 5 - Create Calculated Attributes \n Step 6 - Create your Audience \n Step 7 - Activation"
 
-    # Find all <p> tags inside this container
-    paragraphs = container_div.find_all("p")
-    if not paragraphs:
-        return "Could not find relevant paragraphs in the specified content container."
+    # Collect the text from all <strong> tags
+    steps = [f"- {tag.get_text(strip=True)}" for tag in strong_tags]
 
-    content = ["*Steps to Integrate Your Data with Zeotap:*"]
+    if not steps:
+        return "No relevant content found in <strong> tags."
 
-    # Extract steps from <strong> tags and their surrounding text
-    for p_tag in paragraphs:
-        strong_tag = p_tag.find("strong")
-        if strong_tag:
-            # Combine the bold text and the entire paragraph content
-            content.append(f"- {p_tag.get_text(strip=True)}")
-
-    # Return the extracted information
+    content = ["**Steps to Integrate Your Data with Zeotap:**"] + steps
     return "\n".join(content)
 
 
-
+#frontend
 import requests
 from bs4 import BeautifulSoup
 import streamlit as st
