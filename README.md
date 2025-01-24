@@ -60,9 +60,12 @@ The chatbot successfully provides step-by-step guidance for integration processe
 - Add support for additional CDPs.  
 - Implement natural language processing (NLP) for better query understanding.  
 - Enable multi-language support for international documentation.
-📦 Installation
-Clone the repository:
-git clone https://github.com/thilaksagarn/Chatbot-for-CDP.git
-Navigate to the project directory:
-cd Chatbot for CDP
-Open app.py in a browser to run the application.
+  
+## 📦 Installation  
+1. Clone the repository:  
+   ```bash
+   git clone https://github.com/thilaksagarn/Chatbot-for-CDP.git
+2. Navigate to the project directory:
+    ```bash
+    cd Chatbot-for-CDP
+3. Open terminal and enter "streamlit run app.py" to run the application.
