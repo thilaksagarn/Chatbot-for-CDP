@@ -5,7 +5,8 @@ The **CDP Support Agent Chatbot** simplifies the process of accessing **Customer
 ---
 
 ## 📸 Screenshots
- 
+![image](https://github.com/user-attachments/assets/593ad010-1691-428a-989c-3e9c33bec984)
+
 
 ---
 
