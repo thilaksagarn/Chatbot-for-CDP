@@ -2,6 +2,8 @@
 
 The **CDP Support Agent Chatbot** simplifies the process of accessing **Customer Data Platform (CDP)** documentation from tools like **Segment**, **mParticle**, **Lytics**, and **Zeotap**. It provides quick and accurate answers to common integration-related questions, such as setting up data sources, creating user profiles, and building audience segments.
 
+Our site is live at   https://chatbot-for-cdp.streamlit.app/
+
 ---
 
 ## 📸 Screenshots
